@@ -15,8 +15,10 @@
 
     // Get Person Id ("/GetPerson/{$person_id}")
 
+    $type = isset($_GET['type']) ? $_GET['type'] : 'join';    
+
     // Get person Depend On Id ("if the person_id is null the result will be null")
-    $person->read_single();
+    $person->read_single($type);
 
     // Create array Of Result
     $person_arr = array('id' => $person->id, 'type' => $person->type, 'name' => $person->name, 'father_name' => $person->father_name, 'grandfather_name' => $person->grandfather_name , 'birthdate' => $person->birthdate, 'lat' => $person->lat, 'lng' => $person->lng);
@@ -30,8 +32,10 @@
 
     // Get Persons Between Dates ("/GetPersonBetweenDates/{$date1}/{$date2}")
 
+    $type = isset($_GET['type']) ? $_GET['type'] : 'join';
+
     // Get Persons Between Start And End Date If Passing Start_date And End_date
-    $result = $person->readBetweenDates();
+    $result = $person->readBetweenDates($type);
 
     // Get row count For The Tree
     $num = $result->rowCount();

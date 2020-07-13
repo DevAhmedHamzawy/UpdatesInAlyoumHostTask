@@ -16,23 +16,30 @@
     
 
     // Get Tree Of Specific Person
-    public function readBetweenDates() {
+    public function readBetweenDates($type) {
 
       // Create query
-      $query = 'SELECT  p.* , f.name as father_name , gf.name as grandfather_name  FROM ' . $this->table . ' p JOIN '. $this->table .' f ON f.id = p.person_id  JOIN '. $this->table .' gf ON gf.id = f.person_id ';
+      //$query = 'SELECT  p.* , f.name as father_name , gf.name as grandfather_name  FROM ' . $this->table . ' p JOIN '. $this->table .' f ON f.id = p.person_id  JOIN '. $this->table .' gf ON gf.id = f.person_id ';
       
+      $query = $this->getQueryType($type);
+
       // GetPerson/{$start_date}&{$end_date}
       if(isset($this->start_date) && isset($this->end_date)){ $query .= ' WHERE p.birthdate BETWEEN ? AND ? '; $r = $this->executeQuery($query ,[1 => $this->start_date, 2 => $this->end_date]); } else { die(); }
-      
+    
       return $r;
     }
 
 
     // Get Single Person
-    public function read_single() {
+    public function read_single($type) {
       // Create query
-      $query = 'SELECT  p.*, f.name as father_name , gf.name as grandfather_name FROM ' . $this->table . ' p  JOIN '. $this->table .' f ON f.id = p.person_id  JOIN '. $this->table .' gf ON gf.id = f.person_id WHERE p.id = ? ';
+      //$query = 'SELECT  p.*, f.name as father_name , gf.name as grandfather_name FROM ' . $this->table . ' p  JOIN '. $this->table .' f ON f.id = p.person_id  JOIN '. $this->table .' gf ON gf.id = f.person_id WHERE p.id = ? ';
       
+
+      $query = $this->getQueryType($type);
+
+      $query .= "WHERE p.id = ? ";
+
       // Prepare statement
       $stmt = $this->conn->prepare($query);
       
@@ -97,6 +104,16 @@
       // Execute
       json_decode(curl_exec($ch) , true);
     }
+  }
+
+  private function getQueryType($type){
+    if($type == 'join'){       
+      $query = 'SELECT  p.*, f.name as father_name , gf.name as grandfather_name FROM ' . $this->table . ' p  JOIN '. $this->table .' f ON f.id = p.person_id  JOIN '. $this->table .' gf ON gf.id = f.person_id ';
+    } else { 
+      $query = 'SELECT  p.*, (SELECT f.name from ' . $this->table . ' f where f.id =  p.person_id) as father_name , (SELECT gf.name from ' . $this->table . ' f JOIN '. $this->table .' gf ON gf.id = f.person_id where f.id =  p.person_id) as grandfather_name  FROM ' . $this->table . ' p ';
+    }
+
+    return $query;
   }
 
 
